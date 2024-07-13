@@ -48,7 +48,10 @@ router.post(
       const imageUrls = await Promise.all(uploadPromises);
       newHotel.imageUrls = imageUrls;
       newHotel.lastUpdated = new Date();
-      newHotel.userId = req.userId;
+      newHotel.userId = req.userId ?? "";
+      if (!newHotel.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
       const hotel = new Hotel(newHotel);
       await hotel.save();
       res.status(201).json(hotel);
