@@ -19,15 +19,39 @@ export type HotelType = {
   starRating: number;
 };
 
-const HotelForm = () => {
+type Props = {
+  onSave: (hotelData: FormData) => void;
+  isLoading: boolean;
+};
+
+const HotelForm = ({ onSave, isLoading }: Props) => {
   const formMethods = useForm<HotelType>();
   const { handleSubmit } = formMethods;
-  const onSubmit = handleSubmit((formData: HotelType) => {
-    
-  })
+  const onSubmit = handleSubmit((formDataJson: HotelType) => {
+    const formData = new FormData();
+    formData.append("name", formDataJson.name);
+    formData.append("city", formDataJson.city);
+    formData.append("country", formDataJson.country);
+    formData.append("description", formDataJson.description);
+    formData.append("type", formDataJson.type);
+    formData.append("adultCount", String(formDataJson.adultCount));
+    formData.append("childCount", String(formDataJson.childCount));
+    formData.append("pricePerNight", String(formDataJson.pricePerNight));
+    formData.append("starRating", String(formDataJson.starRating));
+
+    formDataJson.facilities.forEach((facility, i) => {
+      formData.append(`facilities[${i}]`, facility);
+    });
+
+    Array.from(formDataJson.imageFiles).forEach((file) => {
+      formData.append("imageFiles", file);
+    });
+
+    onSave(formData);
+  });
   return (
     <FormProvider {...formMethods}>
-      <form className="flex flex-col gap-10">
+      <form className="flex flex-col gap-10" onSubmit={onSubmit}>
         <DetailsSection />
         <TypeSection />
         <FacilitiesSection />
@@ -35,10 +59,11 @@ const HotelForm = () => {
         <ImageSection />
         <span className="flex justify-end">
           <button
+            disabled={isLoading}
             type="submit"
-            className="bg-blue-600 text-white p-2 font-bold hover:bg-blue:500 text-xl "
+            className="bg-blue-600 text-white p-2 font-bold hover:bg-blue:500 text-xl disabled:bg-gray-500 "
           >
-            Save
+            {isLoading ? "Saving..." : "Save"}
           </button>
         </span>
       </form>

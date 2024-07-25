@@ -50,7 +50,20 @@ export const logout = async () => {
     method: "POST",
     credentials: "include",
   });
-  if(!response.ok) {
+  if (!response.ok) {
     throw new Error("Logout failed");
   }
+};
+
+export const addHotel = async (formData: FormData) => {
+  const response = await fetch(`${API_BASE_URL}/api/my-hotels`, {
+    method: "POST",
+    credentials: "include",
+    body: formData,
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message);
+  }
+  return data;
 };
