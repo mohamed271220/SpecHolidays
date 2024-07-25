@@ -33,7 +33,7 @@ const MyHotels = () => {
 
       <div className="grid grid-cols-1 gap-8">
         {isLoading && <p>Loading...</p>}
-        {hotels?.map((hotel, i) => (
+        {hotels?.map((hotel) => (
           <div className="flex flex-col justify-between border border-slate-300 rounded-lg p-8 gap-5">
             <h2 className="text-2xl font-bold">{hotel.name}</h2>
             <div className="whitespace-pre-line">{hotel.description}</div>
