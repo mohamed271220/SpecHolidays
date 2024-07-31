@@ -7,7 +7,8 @@ import authRoutes from "./routes/auth";
 import cookieParser from "cookie-parser";
 import path from "path";
 import { v2 as cloudinary } from "cloudinary";
-import hotelRoutes from "./routes/user-hotels";
+import userHotelRoutes from "./routes/user-hotels";
+import hotelRoutes from "./routes/hotels";
 import dotenv from "dotenv";
 
 cloudinary.config({
@@ -38,7 +39,8 @@ app.use(express.static(path.join(__dirname, "../../frontend/dist")));
 
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
-app.use("/api/my-hotels", hotelRoutes);
+app.use("/api/my-hotels", userHotelRoutes);
+app.use("/api/hotels", hotelRoutes);
 
 app.get("*", (req: Request, res: Response) => {
   res.sendFile(path.join(__dirname, "../../frontend/dist/index.html"));
