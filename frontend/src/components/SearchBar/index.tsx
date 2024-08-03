@@ -22,7 +22,8 @@ const SearchBar = () => {
       checkIn,
       checkOut,
       adultCount,
-      childCount
+      childCount,
+      ""
     );
     navigate("/search");
   };
