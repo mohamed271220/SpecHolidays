@@ -149,3 +149,12 @@ export const searchHotels = async (
   }
   return data;
 };
+
+export const fetchHotelById = async (id: string): Promise<HotelType> => {
+  const response = await fetch(`${API_BASE_URL}/api/hotels/${id}`);
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message);
+  }
+  return data;
+};

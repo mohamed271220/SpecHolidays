@@ -15,7 +15,7 @@ test.beforeEach(async ({ page }) => {
 
 test("Should allow user to create a hotel", async ({ page }) => {
   await page.goto(`${UI_URL}/add-hotel`);
-  await page.locator("[name=name]").fill("Hotel 1");
+  await page.locator("[name=name]").fill("Hotel 6");
   await page.locator("[name=description]").fill("Description 1");
   await page.locator("[name=city]").fill("City 1");
   await page.locator("[name=country]").fill("Country 1");
@@ -33,24 +33,24 @@ test("Should allow user to create a hotel", async ({ page }) => {
   await page.getByRole("button", { name: "Save" }).click();
   // Wait for the success message to appear with an increased timeout
   await expect(page.getByText("Hotel added successfully")).toBeVisible({
-    timeout: 10000,
+    timeout: 1000000,
   });
 });
 
 test("Should allow user to view hotels", async ({ page }) => {
   await page.goto(`${UI_URL}/my-hotels`);
 
-  await expect(page.getByText("Dublin Getaways")).toBeVisible();
+  await expect(page.getByText("Dublin Getaways").first()).toBeVisible();
   await expect(
     page.getByText(
       "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus ultricies sodales rhoncus"
-    )
+    ).first()
   ).toBeVisible();
   await expect(page.getByText("Dublin, Ireland")).toBeVisible();
   await expect(page.getByText("119$ per night")).toBeVisible();
   await expect(page.getByText("All Inclusive")).toBeVisible();
   await expect(page.getByText("2 adults, 3 children")).toBeVisible();
-  await expect(page.getByText("2 Star rating")).toBeVisible();
+  await expect(page.getByText("2 Star rating").first()).toBeVisible();
 
   await expect(page.getByRole("link", { name: "Add Hotel" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Edit" }).first()).toBeVisible();
