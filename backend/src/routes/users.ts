@@ -2,10 +2,21 @@ import express, { Request, Response } from "express";
 import User from "../models/user";
 import jwt from "jsonwebtoken";
 import { check, validationResult } from "express-validator";
+import { verifyToken } from "../middleware/auth";
 
 const router = express.Router();
 
 // validation middleware
+
+router.get("/me", verifyToken, async (req: Request, res: Response) => {
+  try {
+    const user = await User.findById((req as any).userId).select("-password");
+    return res.status(200).json(user);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+});
 
 router.post(
   "/register",

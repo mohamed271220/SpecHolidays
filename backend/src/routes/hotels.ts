@@ -1,7 +1,12 @@
 import express, { Request, Response } from "express";
 import Hotel from "../models/hotel";
-import { HotelSearchResponse } from "../shared/types";
+import { BookingType, HotelSearchResponse } from "../shared/types";
 import { param, validationResult } from "express-validator";
+import Stripe from "stripe";
+import { verifyToken } from "../middleware/auth";
+
+// Initialized stripe with the secret key
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY! as string);
 
 const router = express.Router();
 
@@ -66,6 +71,103 @@ router.get(
         return res.status(404).send({ message: "Hotel not found" });
       }
       res.json(hotel);
+    } catch (error) {
+      console.log("error " + error);
+      res.status(500).send({ message: "Internal server error" });
+    }
+  }
+);
+
+// Creating payment intent
+router.post(
+  "/:hotelId/booking/payment-intent",
+  verifyToken,
+  async (req: Request, res: Response) => {
+    // 1. totalCost
+    // 2. hotelId
+    // 3. userId
+    try {
+      const { numberOfNights } = req.body;
+      const hotelId = req.params.hotelId;
+      const hotel = await Hotel.findById(hotelId);
+      if (!hotel) {
+        return res.status(404).send({ message: "Hotel not found" });
+      }
+      const totalCost = Number(hotel.pricePerNight) * Number(numberOfNights);
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: totalCost * 100,
+        currency: "usd",
+        metadata: {
+          hotelId,
+          userId: req.userId as string,
+        },
+      });
+
+      if (!paymentIntent.client_secret) {
+        return res.status(500).send({ message: "Internal server error" });
+      }
+
+      const response = {
+        paymentIntentId: paymentIntent.id,
+        clientSecret: paymentIntent.client_secret.toString(),
+        totalCost: totalCost,
+      };
+
+      res.json(response);
+    } catch (error) {
+      console.log("error " + error);
+      res.status(500).send({ message: "Internal server error" });
+    }
+  }
+);
+
+// Creating a booking
+router.post(
+  "/:hotelId/bookings",
+  verifyToken,
+  async (req: Request, res: Response) => {
+    try {
+      const paymentIntentId = req.body.paymentIntentId;
+      const paymentIntent = await stripe.paymentIntents.retrieve(
+        paymentIntentId as string
+      );
+
+      if (!paymentIntent) {
+        return res.status(404).send({ message: "Payment intent not found" });
+      }
+
+      if (
+        paymentIntent.metadata.userId !== req.userId ||
+        paymentIntent.metadata.userId !== req.userId
+      ) {
+        return res.status(403).send({ message: "Forbidden" });
+      }
+
+      if (paymentIntent.status !== "succeeded") {
+        return res.status(400).send({
+          message: "Payment not successful. Status:" + paymentIntent.status,
+        });
+      }
+
+      const newBooking: BookingType = {
+        ...req.body,
+        userId: req.userId as string,
+      };
+
+      const hotel = await Hotel.findOneAndUpdate(
+        { _id: req.params.hotelId },
+        {
+          $push: { bookings: newBooking }, // push the new booking to the bookings array
+        }
+      );
+
+      if(!hotel) {
+        return res.status(404).send({ message: "Hotel not found" });
+      }
+
+      await hotel.save();
+      res.status(201).send({ message: "Booking created successfully" });
+
     } catch (error) {
       console.log("error " + error);
       res.status(500).send({ message: "Internal server error" });
