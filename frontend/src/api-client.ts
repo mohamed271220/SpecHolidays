@@ -10,6 +10,15 @@ import { SignInFormData } from "./pages/SignIn";
 
 const API_BASE_URL = (import.meta.env.VITE_REACT_APP_API_URL as string) || "";
 
+export const fetchHotels = async (): Promise<HotelType[]> => {
+  const response = await fetch(`${API_BASE_URL}/api/hotels`);
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error("Error fetching hotels");
+  }
+  return data;
+};
+
 export const fetchCurrentUser = async (): Promise<UserType> => {
   const response = await fetch(`${API_BASE_URL}/api/users/me`, {
     credentials: "include",
