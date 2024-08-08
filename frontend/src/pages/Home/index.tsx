@@ -1,4 +1,3 @@
-import React from "react";
 import * as apiClient from "../../api-client";
 import { useQuery } from "react-query";
 import LatestDestinationCard from "../../components/LatestDestinationCard";
